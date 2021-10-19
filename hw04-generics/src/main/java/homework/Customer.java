@@ -3,10 +3,10 @@ package homework;
 
 import java.util.Objects;
 
-public class Customer implements Comparable<Customer> {
+public class Customer implements Cloneable {
     private final Long id;
-    private final String name;
-    private final Long scores;
+    private String name;
+    private Long scores;
 
     //todo: 1. в этом классе надо исправить ошибки
 
@@ -25,7 +25,7 @@ public class Customer implements Comparable<Customer> {
     }
 
     public void setName(String name) {
-
+        this.name = name;
     }
 
     public long getScores() {
@@ -33,7 +33,7 @@ public class Customer implements Comparable<Customer> {
     }
 
     public void setScores(long scores) {
-
+        this.scores = scores;
     }
 
     @Override
@@ -61,7 +61,12 @@ public class Customer implements Comparable<Customer> {
     }
 
     @Override
-    public int compareTo(Customer o) {
-        return (int)(this.getScores() - o.getScores());
+    public Customer clone() {
+        try {
+            return (Customer) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
