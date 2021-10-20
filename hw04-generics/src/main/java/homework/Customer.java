@@ -61,12 +61,7 @@ public class Customer implements Cloneable {
     }
 
     @Override
-    public Customer clone() {
-        try {
-            return (Customer) super.clone();
-        } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public Customer clone() throws CloneNotSupportedException {
+        return (Customer) super.clone();
     }
 }
