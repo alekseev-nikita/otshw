@@ -1,75 +1,48 @@
 package ru.otus;
 
-import ru.otus.annotations.After;
-import ru.otus.annotations.Before;
-import ru.otus.annotations.Test;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 public class TestRunner {
-    static int passed;
-    static int errors;
-    private static List<Method> cases = new ArrayList<>();
-    private static List<Method> before = new ArrayList<>();
-    private static List<Method> after = new ArrayList<>();
 
-    public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        Class<?> clazz = Class.forName("ru.otus.Tests");
+    public static void run(Class<?> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        TestingContext context = getContext(clazz);
 
-        setCases(clazz);
+        TestResults testResults = runTests(clazz, context);
 
-        runTests(clazz);
-
-        printResult();
-    }
-    private static void printResult() {
-        if(errors == 0){
-            System.out.println(String.format("All tests passed %d/%d", passed, cases.size()));
-        } else {
-            System.err.println(String.format("%d errors in %d total", errors, cases.size()));
-        }
+        testResults.printResult();
     }
 
-    private static void runTests(Class clz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private static TestResults runTests(Class clz, TestingContext testingContext) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        TestResults testResults = new TestResults();
         Constructor<?> constructor = clz.getConstructor();
-        var instance = (Tests)constructor.newInstance();
+        var instance = clz.getDeclaredConstructor().newInstance();
 
-        for (Method method : cases) {
+        for (Method method : testingContext.getCases()) {
             try{
-                setupRun(before, instance);
+                setupRun(testingContext.getBefore(), instance);
                 method.invoke(instance);
-                passed++;
+                testResults.addPassed();
             }
             catch (Exception e) {
-                errors++;
+                testResults.addErrors();
             }
             finally {
-                setupRun(after, instance);
+                setupRun(testingContext.getAfter(), instance);
             }
         }
+        return testResults;
     }
 
-    private static void setupRun(List<Method> setup, Tests inst) throws InvocationTargetException, IllegalAccessException {
+    private static void setupRun(List<Method> setup, Object inst) throws InvocationTargetException, IllegalAccessException {
         for (Method m : setup) {
             m.invoke(inst);
         }
     }
 
-    private static void setCases(Class<?> TestClass){
-        for (Method m: TestClass.getDeclaredMethods()){
-            if (m.isAnnotationPresent(Test.class)){
-                cases.add(m);
-            }
-            else if (m.isAnnotationPresent(Before.class)) {
-                before.add(m);
-            }
-            else if (m.isAnnotationPresent(After.class)) {
-                after.add(m);
-            }
-        }
+    private static TestingContext getContext(Class<?> TestClass){
+        return new TestingContext(TestClass);
     }
 }
