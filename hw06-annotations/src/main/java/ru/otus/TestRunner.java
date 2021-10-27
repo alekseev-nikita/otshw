@@ -12,17 +12,19 @@ public class TestRunner {
 
         TestResults testResults = runTests(clazz, context);
 
-        testResults.printResult();
+        printResult(testResults.results());
+    }
+    private static void printResult(String result) {
+        System.out.println(result);
     }
 
-    private static TestResults runTests(Class clz, TestingContext testingContext) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private static TestResults runTests(Class<?> clz, TestingContext testingContext) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TestResults testResults = new TestResults();
-        Constructor<?> constructor = clz.getConstructor();
         var instance = clz.getDeclaredConstructor().newInstance();
 
         for (Method method : testingContext.getCases()) {
             try{
-                setupRun(testingContext.getBefore(), instance);
+                invokeByAnnotation(testingContext.getBefore(), instance);
                 method.invoke(instance);
                 testResults.addPassed();
             }
@@ -30,14 +32,18 @@ public class TestRunner {
                 testResults.addErrors();
             }
             finally {
-                setupRun(testingContext.getAfter(), instance);
+                try {
+                    invokeByAnnotation(testingContext.getAfter(), instance);
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
             }
         }
         return testResults;
     }
 
-    private static void setupRun(List<Method> setup, Object inst) throws InvocationTargetException, IllegalAccessException {
-        for (Method m : setup) {
+    private static void invokeByAnnotation(List<Method> methods, Object inst) throws InvocationTargetException, IllegalAccessException {
+        for (Method m : methods) {
             m.invoke(inst);
         }
     }

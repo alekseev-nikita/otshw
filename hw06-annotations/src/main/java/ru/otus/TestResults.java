@@ -22,11 +22,11 @@ public class TestResults {
         return passed;
     }
 
-    public void printResult() {
+    public String results() {
         if(errors == 0){
-            System.out.println(String.format("Passed: %d; Errors: 0", passed));
+            return String.format("Passed: %d; Errors: 0", passed);
         } else {
-            System.err.println(String.format("Passed: %d; Errors: %d",passed, errors));
+            return String.format("Passed: %d; Errors: %d",passed, errors);
         }
     }
 }
