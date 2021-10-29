@@ -6,11 +6,11 @@ public class TestResults {
 
     public TestResults() {};
 
-    private void addErrors() {
+    public void addErrors() {
         this.errors++;
     }
 
-    private void addPassed() {
+    public void addPassed() {
         this.passed++;
     }
 
@@ -27,14 +27,6 @@ public class TestResults {
             return String.format("Passed: %d; Errors: 0", passed);
         } else {
             return String.format("Passed: %d; Errors: %d",passed, errors);
-        }
-    }
-    public void addResult(boolean result) {
-        if (result) {
-            addPassed();
-        }
-        else {
-            addErrors();
         }
     }
 }

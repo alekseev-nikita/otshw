@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestingContext {
-    private final List<Method> cases = new ArrayList<>();
-    private final List<Method> before = new ArrayList<>();
-    private final List<Method> after = new ArrayList<>();
+    private List<Method> cases = new ArrayList<>();
+    private List<Method> before = new ArrayList<>();
+    private List<Method> after = new ArrayList<>();
 
     public TestingContext(Class<?> TestClass) {
         for (Method m: TestClass.getDeclaredMethods()){

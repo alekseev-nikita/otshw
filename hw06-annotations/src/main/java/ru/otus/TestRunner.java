@@ -9,13 +9,8 @@ public class TestRunner {
 
     public static void run(Class<?> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TestingContext context = getContext(clazz);
-        TestResults testResults = new TestResults();
 
-        for (Method mTest : context.getCases() ) {
-            TestRunner testRunner = new TestRunner();
-
-            testResults.addResult( testRunner.runTests(clazz, mTest, context) );
-        }
+        TestResults testResults = runTests(clazz, context);
 
         printResult(testResults.results());
     }
@@ -23,27 +18,31 @@ public class TestRunner {
         System.out.println(result);
     }
 
-    private boolean runTests(Class<?> clz, Method method, TestingContext testingContext) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private static TestResults runTests(Class<?> clz, TestingContext testingContext) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        TestResults testResults = new TestResults();
         var instance = clz.getDeclaredConstructor().newInstance();
 
-        try{
-            invokeAll(testingContext.getBefore(), instance);
-            method.invoke(instance);
-        }
-        catch (Exception e) {
-            return false;
-        }
-        finally {
-            try {
-                invokeAll(testingContext.getAfter(), instance);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
+        for (Method method : testingContext.getCases()) {
+            try{
+                invokeByAnnotation(testingContext.getBefore(), instance);
+                method.invoke(instance);
+                testResults.addPassed();
+            }
+            catch (Exception e) {
+                testResults.addErrors();
+            }
+            finally {
+                try {
+                    invokeByAnnotation(testingContext.getAfter(), instance);
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
             }
         }
-        return true;
+        return testResults;
     }
 
-    private static void invokeAll(List<Method> methods, Object inst) throws InvocationTargetException, IllegalAccessException {
+    private static void invokeByAnnotation(List<Method> methods, Object inst) throws InvocationTargetException, IllegalAccessException {
         for (Method m : methods) {
             m.invoke(inst);
         }
