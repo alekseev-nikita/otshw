@@ -1,6 +1,5 @@
 package ru.otus;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -20,11 +19,10 @@ public class TestRunner {
 
     private static TestResults runTests(Class<?> clz, TestingContext testingContext) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         TestResults testResults = new TestResults();
-        var instance = clz.getDeclaredConstructor().newInstance();
-
         for (Method method : testingContext.getCases()) {
+            var instance = clz.getDeclaredConstructor().newInstance();
             try{
-                invokeByAnnotation(testingContext.getBefore(), instance);
+                invokeAll(testingContext.getBefore(), instance);
                 method.invoke(instance);
                 testResults.addPassed();
             }
@@ -33,7 +31,7 @@ public class TestRunner {
             }
             finally {
                 try {
-                    invokeByAnnotation(testingContext.getAfter(), instance);
+                    invokeAll(testingContext.getAfter(), instance);
                 } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
@@ -42,13 +40,13 @@ public class TestRunner {
         return testResults;
     }
 
-    private static void invokeByAnnotation(List<Method> methods, Object inst) throws InvocationTargetException, IllegalAccessException {
+    private static void invokeAll(List<Method> methods, Object inst) throws InvocationTargetException, IllegalAccessException {
         for (Method m : methods) {
             m.invoke(inst);
         }
     }
 
-    private static TestingContext getContext(Class<?> TestClass){
-        return new TestingContext(TestClass);
+    private static TestingContext getContext(Class<?> testClass){
+        return new TestingContext(testClass);
     }
 }
